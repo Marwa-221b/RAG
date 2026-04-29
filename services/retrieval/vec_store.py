@@ -6,8 +6,9 @@ class VectorStore:
         self.index=faiss.IndexFlatIP(dimension)
         self.chunks=[]
 
-    def normalize(self,embedding):
-        norm=np.linalg.norm(embedding,axis=1,Keepdims=True)
+    @staticmethod
+    def normalize(embedding):
+        norm=np.linalg.norm(embedding,axis=1,keepdims=True)
         return embedding/norm
 
     def add(self,embedding , chunks):
