@@ -1,0 +1,19 @@
+services:
+
+  # ── FastAPI RAG Backend ──────────────────────────────────────
+  api:
+    build:
+      context: ..          # Dockerfile is in project root
+      dockerfile: Dockerfile
+    container_name: rag_api
+    ports:
+      - "8000:8000"        # Access API at http://localhost:8000
+    volumes:
+      - ..:/app            # Live reload: code changes reflect instantly
+      - ../data:/app/data  # Persist uploaded docs & FAISS index files
+    env_file:
+      - ../.env
+    restart: unless-stopped
+
+volumes:
+  api_data:
