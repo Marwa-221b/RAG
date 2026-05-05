@@ -16,3 +16,4 @@ faiss-cpu
 openai
 google-generativeai
 streamlit
+genai
