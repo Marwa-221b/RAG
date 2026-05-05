@@ -1,8 +1,8 @@
 from services.ingestion.pipeline import DataIngestionPipeline
 from services.retrieval.chunking import chunk_text
-from embeddings import embedding
-from vec_store import VectorStore
-from retriever import retrieve
+from services.retrieval.embeddings import embedding
+from services.retrieval.vec_store import VectorStore
+from services.retrieval.retriever import retrieve
 
 def vector_store_from_pipline(folder_path="../../data",dimension=384):
     pipline=DataIngestionPipeline()

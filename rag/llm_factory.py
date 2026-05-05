@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-import  google.generativeai as genai 
+from google import genai
 from openai import OpenAI 
 
 class LLMEnums(Enum):

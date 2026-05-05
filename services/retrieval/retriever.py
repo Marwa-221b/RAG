@@ -1,5 +1,5 @@
-from embeddings import model
-from vec_store import VectorStore
+from services.retrieval.embeddings import model
+from services.retrieval.vec_store import VectorStore
 
 def retrieve(query,vec_store,top_k=2):
     query_embedding=model.encode([query])
