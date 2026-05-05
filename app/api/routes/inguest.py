@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
 from ..Model.ingest import IngestRequest
 from  .auth import get_current_user
-from ....services.ingestion.pipline import DataIngestionPipeline
+from  services.ingestion.pipline import DataIngestionPipeline
 
 router = APIRouter()
+DATA_DIR = "/home/marwaahmed/rag-project/RAG/data/orgin_doc"
 
 @router.post("/ingest")
 async def ingest_documents(request: IngestRequest, current_user: dict = Depends(get_current_user)):
@@ -15,3 +16,6 @@ async def ingest_documents(request: IngestRequest, current_user: dict = Depends(
         "documents": documents,
         "total_processed": len(documents)
     }
+
+
+     
