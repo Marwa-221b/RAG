@@ -1,5 +1,5 @@
 from services.ingestion.pipeline import DataIngestionPipeline
-from chunking import chunk_text
+from services.retrieval.chunking import chunk_text
 from embeddings import embedding
 from vec_store import VectorStore
 from retriever import retrieve
