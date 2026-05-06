@@ -42,7 +42,7 @@ def generate_answer(query, retrieved_docs, config):
 
     # 2. Create LLM
     factory = LLMProviderFactory(config)
-    llm = factory.create(config.get("PROVIDER", "OPENAI"))
+    llm = factory.create(config.get("PROVIDER", "DEEPSEEK"))
 
     # 3. Generate answer
     answer = llm.generate_text(prompt)

@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 from google import genai
-from openai import OpenAI 
+from openai import OpenAI
 
 class LLMEnums(Enum):
     GEMINI = "GEMINI"
     OPENAI = "OPENAI"
+    DEEPSEEK = "DEEPSEEK"
 
 class LLMInterface(ABC):
     @abstractmethod
@@ -16,22 +17,34 @@ class LLMInterface(ABC):
 
 
 class GeminiProvider(LLMInterface):
-    def __init__(self, api_key, model_id="gemini-1.5-flash"):
-        self.client = genai.Client(api_key=api_key)
-        self.model_id = model_id
-
+    def __init__(self, api_key, model_id="gemini-2.0-flash"):
+         self.client = genai.Client(api_key=api_key)
+         self.model_id = model_id
     def generate_text(self, prompt: str):
-        response = self.client.models.generate_content(model=self.model_id, contents=prompt)
+        response = self.client.models.generate_content(
+            model=self.model_id,
+            contents=prompt
+        )
         return response.text
 
     def embed_text(self, text: str):
-        result = self.client.models.embed_content(model="text-embedding-004", contents=text)
+        result = self.client.models.embed_content(
+            model="gemini-embedding-001",
+            contents=text
+        )
         return result.embeddings[0].values
 
 
 class OpenAIProvider(LLMInterface):
-    def __init__(self, api_key, model_id="gpt-3.5-turbo"):
-        self.client = OpenAI(api_key=api_key)
+    def __init__(self, api_key, model_id="gpt-4o-mini", base_url=None):
+        if not api_key:
+            raise ValueError("API key is missing")
+
+        self.client = OpenAI(
+            api_key=api_key,
+            base_url=base_url  # important for DeepSeek
+        )
+
         self.model_id = model_id
 
     def generate_text(self, prompt: str):
@@ -42,22 +55,36 @@ class OpenAIProvider(LLMInterface):
         return response.choices[0].message.content
 
     def embed_text(self, text: str):
-        response = self.client.embeddings.create(input=[text], model="text-embedding-3-small")
+        response = self.client.embeddings.create(
+            input=text,
+            model="text-embedding-3-small"
+        )
         return response.data[0].embedding
 
 
 class LLMProviderFactory:
     def __init__(self, config):
-        self.config = config
+        self.config = config or {}
 
     def create(self, provider_name: str):
         p_name = provider_name.upper()
-        
+
+        if p_name == LLMEnums.OPENAI.value:
+            return OpenAIProvider(
+                api_key=self.config.get("OPENAI_API_KEY"),
+                model_id="gpt-4o-mini"
+            )
+
+        if p_name == LLMEnums.DEEPSEEK.value:
+            return OpenAIProvider(
+                api_key=self.config.get("DEEPSEEK_API_KEY"),
+                model_id="deepseek-chat",
+                base_url="https://api.deepseek.com"
+            )
+
         if p_name == LLMEnums.GEMINI.value:
-            return GeminiProvider(api_key=self.config.get("GEMINI_API_KEY"))
-        
-        elif p_name == LLMEnums.OPENAI.value:
-            return OpenAIProvider(api_key=self.config.get("OPENAI_API_KEY"))
-            
-        else:
-            raise ValueError(f"Provider {p_name} is not supported in the Remote Factory.")
+            return GeminiProvider(
+                api_key=self.config.get("GEMINI_API_KEY")
+            )
+
+        raise ValueError(f"Unsupported provider: {provider_name}")

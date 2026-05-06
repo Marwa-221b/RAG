@@ -17,9 +17,10 @@ class QueryRequest(BaseModel):
 vector_store=vector_store_from_pipline("data")
 config={
 
-"PROVIDER": "GEMINI",  # or GEMINI
+"PROVIDER": "DEEPSEEK",  # or GEMINI
 "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
-"GEMINI_API_KEY": os.getenv("GEMINI_API_KEY")
+"GEMINI_API_KEY": os.getenv("GEMINI_API_KEY"),
+"DEEPSEEK_API_KEY":os.getenv("DEEPSEEK_API_KEY")
 
 }
 @router.post("/query")
