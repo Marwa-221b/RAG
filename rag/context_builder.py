@@ -1,5 +1,4 @@
-from sympy import true
-from torch import chunk
+
 
 from services.retrieval.retriever import retrieve
 from services.retrieval.integration_pip_ret import vector_store_from_pipline

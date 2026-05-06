@@ -2,11 +2,12 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from google import genai
 from openai import OpenAI
+import requests  # Add this import
 
 class LLMEnums(Enum):
     GEMINI = "GEMINI"
     OPENAI = "OPENAI"
-    DEEPSEEK = "DEEPSEEK"
+    OLLAMA = "OLLAMA"  # Add this
 
 class LLMInterface(ABC):
     @abstractmethod
@@ -16,51 +17,44 @@ class LLMInterface(ABC):
     def embed_text(self, text: str): pass
 
 
-class GeminiProvider(LLMInterface):
-    def __init__(self, api_key, model_id="gemini-2.0-flash"):
-         self.client = genai.Client(api_key=api_key)
-         self.model_id = model_id
+class OllamaProvider(LLMInterface):
+    def __init__(self, model_name="llama3.2", base_url="http://localhost:11434"):
+        self.model_name = model_name
+        self.base_url = base_url
+        
     def generate_text(self, prompt: str):
-        response = self.client.models.generate_content(
-            model=self.model_id,
-            contents=prompt
+        response = requests.post(
+            f"{self.base_url}/api/generate",
+            json={
+                "model": self.model_name,
+                "prompt": prompt,
+                "stream": False,
+                "options": {
+                    "temperature": 0.7,
+                    "top_p": 0.9
+                }
+            }
         )
-        return response.text
-
+        if response.status_code == 200:
+            return response.json()["response"]
+        else:
+            raise Exception(f"Ollama error: {response.text}")
+    
     def embed_text(self, text: str):
-        result = self.client.models.embed_content(
-            model="gemini-embedding-001",
-            contents=text
+        response = requests.post(
+            f"{self.base_url}/api/embeddings",
+            json={
+                "model": self.model_name,
+                "prompt": text
+            }
         )
-        return result.embeddings[0].values
+        if response.status_code == 200:
+            return response.json()["embedding"]
+        else:
+            raise Exception(f"Ollama embedding error: {response.text}")
 
 
-class OpenAIProvider(LLMInterface):
-    def __init__(self, api_key, model_id="gpt-4o-mini", base_url=None):
-        if not api_key:
-            raise ValueError("API key is missing")
-
-        self.client = OpenAI(
-            api_key=api_key,
-            base_url=base_url  # important for DeepSeek
-        )
-
-        self.model_id = model_id
-
-    def generate_text(self, prompt: str):
-        response = self.client.chat.completions.create(
-            model=self.model_id,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return response.choices[0].message.content
-
-    def embed_text(self, text: str):
-        response = self.client.embeddings.create(
-            input=text,
-            model="text-embedding-3-small"
-        )
-        return response.data[0].embedding
-
+# Keep your existing providers (GeminiProvider, OpenAIProvider)...
 
 class LLMProviderFactory:
     def __init__(self, config):
@@ -69,22 +63,11 @@ class LLMProviderFactory:
     def create(self, provider_name: str):
         p_name = provider_name.upper()
 
-        if p_name == LLMEnums.OPENAI.value:
-            return OpenAIProvider(
-                api_key=self.config.get("OPENAI_API_KEY"),
-                model_id="gpt-4o-mini"
+   
+        
+        # Add Ollama support
+        if p_name == LLMEnums.OLLAMA.value:
+            return OllamaProvider(
+                model_name=self.config.get("OLLAMA_MODEL", "llama3.2")
             )
-
-        if p_name == LLMEnums.DEEPSEEK.value:
-            return OpenAIProvider(
-                api_key=self.config.get("DEEPSEEK_API_KEY"),
-                model_id="deepseek-chat",
-                base_url="https://api.deepseek.com"
-            )
-
-        if p_name == LLMEnums.GEMINI.value:
-            return GeminiProvider(
-                api_key=self.config.get("GEMINI_API_KEY")
-            )
-
         raise ValueError(f"Unsupported provider: {provider_name}")
