@@ -1,25 +1,23 @@
-#placeholder code##
+
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from .api.routes.query import router as query_router
+from .api.routes.inguest import router as ingest_router
+from .api.routes.auth import router as auth_router
+from .api.routes.docker import router as docker_router
+from .api.routes.eval import router as eval_router
+from .api.routes.config import router as config_router
+# from .api.routes.retrieval import router as retrieval_router
 
-app = FastAPI(
-    title="Local RAG API",
-    description="Retrieval-Augmented Generation system",
-    version="1.0.0"
-)
+app = FastAPI()
 
-# Allow frontend / Postman to call the API
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(query_router)
+app.include_router(ingest_router)
+app.include_router(docker_router)
+app.include_router(eval_router)
+app.include_router(config_router)
+# app.include_router(retrieval_router)
 @app.get("/")
-def root():
-    return {"status": "ok", "message": "RAG API is running"}
+async def root():
+    return {"message": "Hello World"}
 
-@app.get("/health")
-def health():
-    return {"status": "healthy"}

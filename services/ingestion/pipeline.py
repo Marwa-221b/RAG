@@ -5,6 +5,8 @@ import docx
 from bs4 import BeautifulSoup
 from arabic_reshaper import reshape
 from bidi.algorithm import get_display
+from charset_normalizer import detect
+
 
 class DataIngestionPipeline:
     def __init__(self):
@@ -78,11 +80,12 @@ class DataIngestionPipeline:
             processed_content = self._clean_and_normalize(raw_text)
 
             return {
+                "id":os.path.splitext(os.path.basename(path))[0],
                 "content": processed_content,
                 "metadata": {
                     "source": os.path.basename(path),
                     "file_type": ext,
-                    "char_count": len(processed_content)
+                    "char_count": len(processed_content),
                 }
             }
         except Exception as e:
@@ -105,16 +108,4 @@ class DataIngestionPipeline:
         
         return documents
 
-# 3alashan ataked mn el run momken tmsa7oh
-if __name__ == "__main__":
-    pipeline = DataIngestionPipeline()
-  
-    data_folder = "data" 
-    
-    final_docs = pipeline.run_on_folder(data_folder)
-    
-    print(f"Total documents processed: {len(final_docs)}")
-    if final_docs:
-        print("\n--- Sample Output (First Doc) ---")
-        print(f"Source: {final_docs[1]['metadata']['source']}")
-        print(f"Content (Snippet): {final_docs[1]['content'][:200]}...")
+
