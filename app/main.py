@@ -20,4 +20,3 @@ app.include_router(config_router)
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
-

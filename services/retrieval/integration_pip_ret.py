@@ -1,10 +1,13 @@
+import os
 from services.ingestion.pipeline import DataIngestionPipeline
 from services.retrieval.chunking import chunk_text
 from services.retrieval.embeddings import embedding
 from services.retrieval.vec_store import VectorStore
 from services.retrieval.retriever import retrieve
 
-def vector_store_from_pipline(folder_path="../../data",dimension=384):
+def vector_store_from_pipline(folder_path=None, dimension=384):
+    if folder_path is None:
+        folder_path = os.getenv("DATA_PATH", "../../data") # Use env var, fallback to default
     pipline=DataIngestionPipeline()
     docs=pipline.run_on_folder(folder_path)
     vector_store=VectorStore(dimension)

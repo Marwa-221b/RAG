@@ -6,12 +6,12 @@ import os
 from datetime import datetime
 
 # Configuration
-API_URL = "http://127.0.0.1:8001"
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 # Page configuration
 st.set_page_config(
     page_title="Askara",
-    page_icon="/home/marwaahmed/rag-project/RAG/GUI/logo_rag.png",
+    page_icon="GUI/logo_rag.png",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -343,7 +343,7 @@ def ingest_page():
     
     with col1:
         st.markdown("### 📂 Document Source")
-        default_path = "/home/marwaahmed/rag-project/RAG/data/orgin_doc"
+        default_path = os.getenv("DATA_DIRECTORY", "./data/orgin_doc")
         folder_path = st.text_input("Folder Path", value=default_path)
         
         st.markdown("#### Supported Formats:")
@@ -425,7 +425,7 @@ def query_page():
 def library_page():
     st.markdown('<div class="main-header"><h1>📚 Document Library</h1></div>', unsafe_allow_html=True)
     
-    default_path = "/home/marwaahmed/rag-project/RAG/data/orgin_doc"
+    default_path = os.getenv("DATA_DIRECTORY", "./data/orgin_doc")
     folder_path = st.text_input("📁 Data Folder Path", value=default_path)
     
     col1, col2 = st.columns([1, 4])
@@ -490,8 +490,9 @@ def config_page():
     
     with col2:
         temperature = st.slider("Temperature", 0.0, 2.0, config.get('temperature', 0.7), 0.1)
-        llm_model = st.selectbox("LLM Model", ["mock", "ollama", "openai", "gemini"], 
-                                  index=["mock", "ollama", "openai", "gemini"].index(config.get('llm_model', 'mock')))
+        model_options = ["ollama", "openai", "gemini"]
+        current_model = config.get('llm_model', 'ollama') if config.get('llm_model') in model_options else "ollama"
+        llm_model = st.selectbox("LLM Model", model_options, index=model_options.index(current_model))
         retrieval_strategy = st.selectbox("Retrieval Strategy", ["similarity", "mmr", "hybrid"],
                                            index=["similarity", "mmr", "hybrid"].index(config.get('retrieval_strategy', 'similarity')))
     

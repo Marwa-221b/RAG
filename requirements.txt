@@ -1,43 +1,37 @@
-
 fastapi==0.104.1
-uvicorn==0.24.0
+uvicorn[standard]==0.24.0
 python-multipart==0.0.6
-faiss-cpu
+starlette==0.27.0
 
 # Vector store
 faiss-cpu==1.8.0
 
 # Embeddings
-sentence-transformers==2.7.0
+#sentence-transformers==2.7.0
 
-# Document parsing (the "No Toy Data" rule)
+# Document parsing
 pypdf==4.2.0
 pdfplumber==0.10.3
-python-docx==0.8.11
+python-docx==1.1.2
 beautifulsoup4==4.12.2
+charset-normalizer==3.3.2
 
-# LLM providers (for the Factory Pattern bonus)
+# Arabic NLP
+arabic-reshaper==3.0.0
+python-bidi==0.4.2
+
+# LLM providers
 openai==1.30.1
 google-generativeai==0.5.4
 ollama==0.2.1
 streamlit
-google-genai
+
+# Auth
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
 
 # Utilities
 python-dotenv==1.0.0
 numpy==1.26.4
-
-
-starlette==0.27.0
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-
 pydantic==2.4.2
-
-
-arabic-reshaper==3.0.0
-python-bidi==0.4.2
-
-sentence-transformers
-
-
+requests==2.31.0

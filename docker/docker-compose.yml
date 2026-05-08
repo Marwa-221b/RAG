@@ -1,19 +1,33 @@
 services:
-
-  # ── FastAPI RAG Backend ──────────────────────────────────────
   api:
     build:
-      context: ..          # Dockerfile is in project root
+      context: ..
       dockerfile: Dockerfile
     container_name: rag_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --app-dir .
     ports:
-      - "8000:8000"        # Access API at http://localhost:8000
+      - "8000:8000"
     volumes:
-      - ..:/app            # Live reload: code changes reflect instantly
-      - ../data:/app/data  # Persist uploaded docs & FAISS index files
+      - ..:/app
+      - ../data:/app/data
     env_file:
       - ../.env
+    environment:
+      - DATA_PATH=/app/data
+      - DATA_DIRECTORY=/app/data/orgin_doc
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  #  lets container reach Ollama on host
     restart: unless-stopped
+
+  gui:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: streamlit run GUI/gui.py
+    environment:
+      - API_URL=http://api:8000
+    ports:
+      - "8501:8501"
 
 volumes:
   api_data:

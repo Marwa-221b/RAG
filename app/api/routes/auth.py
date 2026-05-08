@@ -42,7 +42,9 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.now(timezone.utc)+ timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, os.getenv("SECRET_KEY"), algorithm=os.getenv("ALGORITHM"))
+    secret = os.getenv("SECRET_KEY", "dev_secret_key_change_me")
+    algo = os.getenv("ALGORITHM", "HS256")
+    encoded_jwt = jwt.encode(to_encode, secret, algorithm=algo)
     return encoded_jwt
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -52,7 +54,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=[os.getenv("ALGORITHM")])
+        secret = os.getenv("SECRET_KEY", "dev_secret_key_change_me")
+        algo = os.getenv("ALGORITHM", "HS256")
+        payload = jwt.decode(token, secret, algorithms=[algo])
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
@@ -88,7 +92,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")))
+    expire_minutes = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+    access_token_expires = timedelta(minutes=expire_minutes)
     access_token = create_access_token(
         data={"sub": user["username"]}, expires_delta=access_token_expires
     )
