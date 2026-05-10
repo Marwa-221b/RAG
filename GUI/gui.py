@@ -136,8 +136,12 @@ def query_documents(question, token):
         )
         if response.status_code == 200:
             return True, response.json()
-        else:
-            return False, response.json().get("detail", "Query failed")
+        else:##
+            try:
+                return False, response.json().get("detail", "Query failed")
+            except json.JSONDecodeError:
+                return False, f"API returned non-JSON error: {response.text}"
+            ###
     except Exception as e:
         return False, f"Connection error: {str(e)}"
 
