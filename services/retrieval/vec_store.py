@@ -1,3 +1,6 @@
+import json
+import os
+
 import faiss
 import numpy as np
 
@@ -22,6 +25,10 @@ class VectorStore:
             self.metadata.extend([metadata]*len(chunks))
 
     def search(self,query,top_k=2):
+        if len(self.chunks)==0:
+            print("Warning vector store is empty. No data to search")
+            return
+
         norm_query=self.normalize(np.array(query))
         dist,indices=self.index.search(norm_query,top_k)
         results=[]
@@ -32,3 +39,24 @@ class VectorStore:
                 "metadata":self.metadata[i]
             })
         return results
+    def save (self, index_path,meta_path):
+        os.makedirs(os.path.dirname(index_path),exist_ok=True)
+        os.makedirs(os.path.dirname(meta_path),exist_ok=True)
+        faiss.write_index(self.index,index_path)
+        with open (meta_path,"w",encoding="utf-8") as f:
+            json.dump({
+                "ids":self.ids,
+                "chunks":self.chunks,
+                "metadata":self.metadata
+            },f)
+
+    @classmethod
+    def load(cls,index_path,meta_path,dimension):
+        vs = cls(dimension)
+        vs.index=faiss.read_index(index_path)
+        with open(meta_path,"r",encoding="utf-8") as f:
+            meta = json.load(f)
+            vs.chunks=meta["chunks"]
+            vs.ids=meta["ids"]
+            vs.metadata=meta["metadata"]
+        return vs
