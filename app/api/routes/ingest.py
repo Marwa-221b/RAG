@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from ..Model.ingest import IngestRequest
 from .auth import get_current_user
-from services.ingestion.pipline import DataIngestionPipeline
+from services.ingestion.pipeline import DataIngestionPipeline
 import os
 
 router = APIRouter()

@@ -1,16 +1,17 @@
 import os.path
 from sys import meta_path
 
+import os
 from services.ingestion.pipeline import DataIngestionPipeline
 from services.retrieval.chunking import chunk_text
 from services.retrieval.embeddings import embedding
 from services.retrieval.vec_store import VectorStore
 from services.retrieval.retriever import retrieve
 
-BASE_INDEX_PATH = "../../data/vector store/indexes"
-BASE_META_PATH = "../../data/vector store/meta"
-BASE_PATH = "../../data"
-DIMENSION=384
+BASE_PATH = os.getenv("DATA_PATH", "/app/data")
+BASE_INDEX_PATH = os.getenv("DATA_INDEX_PATH", "/app/data/vector_store/indexes")
+BASE_META_PATH = os.getenv("DATA_META_PATH", "/app/data/vector_store/meta")
+DIMENSION = 384
 
 def vector_store_from_pipline(folder_path=None,folder_name=None):
     if folder_path:
@@ -29,6 +30,7 @@ def vector_store_from_pipline(folder_path=None,folder_name=None):
         print(f"loading existing vector store for {save_name}")
         saved_vector_store=VectorStore.load(index_path,meta_path,DIMENSION)
         return saved_vector_store
+
 
     pipline=DataIngestionPipeline()
     docs=pipline.run_on_folder(full_folder_path)
