@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-# from google import genai
-import google.generativeai as genai
 from openai import OpenAI
 import requests  # Add this import
 
