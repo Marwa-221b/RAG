@@ -3,9 +3,20 @@
 from services.retrieval.retriever import retrieve
 from services.retrieval.integration_pip_ret import vector_store_from_pipline
 
-vec_store=vector_store_from_pipline()
-def get_context_from_query(query):
-    results=retrieve(query,vec_store,top_k=5)
+_current_vector_store = None   # module-level cache
+
+def set_vector_store(vec_store):
+    global _current_vector_store
+    _current_vector_store = vec_store
+
+def get_context_from_query(query,top_k=5):
+    global _current_vector_store
+    if _current_vector_store is None:
+        return {"query": query, "context": "", "sources": []}
+    # vec_store=vector_store_from_pipline()
+    results=retrieve(query,_current_vector_store,top_k=top_k)
+    if not results:
+        return {"query": query, "context": "", "sources": []}
     results=filter_chunks(results)
     results=Re_Rank(results,query)
     results=trim_chunks(results)
@@ -18,7 +29,7 @@ def get_context_from_query(query):
     }
 
 
-def build_context(retrieved_docs, max_chars=1500):
+def build_context(retrieved_docs, max_chars=4000):
     context = []
     total = 0
 
@@ -60,7 +71,7 @@ def Re_Rank(results,query):
 
 
         #     //////////////////////////// edit in enums
-def trim_chunks(results,max_chars=1500):
+def trim_chunks(results,max_chars=4000):
     selected=[]
     total=0
     for doc in results:
