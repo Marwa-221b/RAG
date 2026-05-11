@@ -8,7 +8,11 @@ from dotenv import load_dotenv
 from services.retrieval.integration_pip_ret import vector_store_from_pipline
 from services.retrieval.retriever import retrieve
 from rag.generator import generate_answer
-from core.config import get_llm_config  
+
+from ..Model.config import system_config as config
+# =======
+# from core.config import get_llm_config  
+# >>>>>>> origin/main
 
 load_dotenv()
 router = APIRouter()
@@ -16,10 +20,12 @@ router = APIRouter()
 class QueryRequest(BaseModel):
     query: str
     
-# vector_store = vector_store_from_pipline("data")
 
-# Use the centralized config
-config = get_llm_config()
+vector_store = vector_store_from_pipline()
+# =======
+# # vector_store = vector_store_from_pipline("data")
+# >>>>>>> origin/main
+
 
 @router.post("/query")
 async def query_endpoint(request: QueryRequest, current_user: dict = Depends(get_current_user)):
