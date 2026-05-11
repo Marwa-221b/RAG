@@ -16,6 +16,8 @@ services:
     environment:
       - DATA_PATH=/app/data
       - DATA_DIRECTORY=/app/data/orgin_doc
+      - DATA_INDEX_PATH=/app/data/vector_store/indexes
+      - DATA_META_PATH=/app/data/vector_store/meta
       - OLLAMA_URL=http://ollama:11434   # ← points to ollama service
     depends_on:
       - ollama                           # ← waits for ollama to start
