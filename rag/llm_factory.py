@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from google import genai
 from openai import OpenAI
 import requests  # Add this import
 
@@ -18,7 +17,7 @@ class LLMInterface(ABC):
 
 
 class OllamaProvider(LLMInterface):
-    def __init__(self, model_name="llama3.2", base_url="http://localhost:11434"):
+    def __init__(self, model_name="llama3.2", base_url="http://host.docker.internal:11434"):
         self.model_name = model_name
         self.base_url = base_url
         
@@ -94,6 +93,8 @@ class LLMProviderFactory:
         self.config = config or {}
 
     def create(self, provider_name: str):
+        if not provider_name:
+            provider_name = "OLLAMA"
         p_name = provider_name.upper()
      
         # Add Ollama support

@@ -1,0 +1,55 @@
+services:
+  
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: rag_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - ..:/app
+      - ../data:/app/data
+    env_file:
+      - ../.env
+    environment:
+      - DATA_PATH=/app/data
+      - DATA_DIRECTORY=/app/data/orgin_doc
+      - DATA_INDEX_PATH=/app/data/vector_store/indexes
+      - DATA_META_PATH=/app/data/vector_store/meta
+      - OLLAMA_URL=http://ollama:11434   # ← points to ollama service
+    depends_on:
+      - ollama                           # ← waits for ollama to start
+    restart: unless-stopped
+
+  gui:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: rag_gui
+    command: streamlit run GUI/gui.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - "8501:8501"
+    volumes:
+      - ..:/app
+    env_file:
+      - ../.env
+    environment:
+      - API_URL=http://api:8000
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: rag_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama       # ← persists downloaded models
+    restart: unless-stopped
+
+volumes:
+  api_data:
+  ollama_data:                          # ← named volume for model storage

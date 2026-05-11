@@ -1,6 +1,7 @@
 
 from pydantic import BaseModel
 from typing import Optional
+import os
 
 system_config = {
     "chunk_size": 200,
@@ -9,9 +10,15 @@ system_config = {
     "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
     "temperature": 0.1,
     "max_length": 512,
-    "vector_db_path": r"C:\Users\Sandra\OneDrive\Desktop\Third-year\NLP\Lab 8&9\RAG\data\vector_store",
-    "data_directory": r"C:\Users\Sandra\OneDrive\Desktop\Third-year\NLP\Lab 8&9\RAG\data",
-    "llm_model": "mock",
+
+    "vector_db_path": os.getenv("VECTOR_DB_PATH", "./data/vector_db"),
+    "data_directory": os.getenv("DATA_DIRECTORY", "./data/orgin_doc"),
+    "llm_model": "ollama",
+
+    # "vector_db_path": r"C:\Users\Sandra\OneDrive\Desktop\Third-year\NLP\Lab 8&9\RAG\data\vector_store",
+    # "data_directory": r"C:\Users\Sandra\OneDrive\Desktop\Third-year\NLP\Lab 8&9\RAG\data",
+    # "llm_model": "mock",
+
     "retrieval_strategy": "similarity"
 }
 class ConfigUpdate(BaseModel):

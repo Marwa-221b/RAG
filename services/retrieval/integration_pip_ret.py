@@ -1,6 +1,7 @@
 import os.path
 from sys import meta_path
 
+import os
 from services.ingestion.pipeline import DataIngestionPipeline
 from services.retrieval.chunking import chunk_text
 from services.retrieval.embeddings import embedding
@@ -9,10 +10,16 @@ from services.retrieval.retriever import retrieve
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.join(BASE_DIR, "..", "..")
 
-BASE_INDEX_PATH = os.path.join(PROJECT_ROOT, "data", "vector_store", "indexes")
-BASE_META_PATH  = os.path.join(PROJECT_ROOT, "data", "vector_store", "meta")
-BASE_PATH = "../../data"
-DIMENSION=384
+BASE_PATH = os.getenv("DATA_PATH", "/app/data")
+BASE_INDEX_PATH = os.getenv("DATA_INDEX_PATH", "/app/data/vector_store/indexes")
+BASE_META_PATH = os.getenv("DATA_META_PATH", "/app/data/vector_store/meta")
+DIMENSION = 384
+
+# BASE_INDEX_PATH = os.path.join(PROJECT_ROOT, "data", "vector_store", "indexes")
+# BASE_META_PATH  = os.path.join(PROJECT_ROOT, "data", "vector_store", "meta")
+# BASE_PATH = "../../data"
+# DIMENSION=384
+# >>>>>>> origin/main
 
 def vector_store_from_pipline(folder_path=None, folder_name=None):
     if folder_path:
@@ -32,9 +39,11 @@ def vector_store_from_pipline(folder_path=None, folder_name=None):
         print(f"Loading existing vector store for {save_name}")
         return VectorStore.load(index_path, meta_path, DIMENSION)
 
+
     pipeline = DataIngestionPipeline()
     docs = pipeline.run_on_folder(full_folder_path)
     vector_store = VectorStore(DIMENSION)
+
 
     if not docs:
         print("Warning: No documents found")
