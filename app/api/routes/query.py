@@ -1,12 +1,35 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from .auth import get_current_user
 
+from rag.context_builder import get_context_from_query
+from .auth import get_current_user
+import os
+from dotenv import load_dotenv
+from services.retrieval.integration_pip_ret import vector_store_from_pipline
+from services.retrieval.retriever import retrieve
+from rag.generator import generate_answer
+from core.config import get_llm_config  
+
+load_dotenv()
 router = APIRouter()
 
 class QueryRequest(BaseModel):
     query: str
+    
+# vector_store = vector_store_from_pipline("data")
+
+# Use the centralized config
+config = get_llm_config()
 
 @router.post("/query")
 async def query_endpoint(request: QueryRequest, current_user: dict = Depends(get_current_user)):
-    return {"answer": f"You asked: {request.query}", "sources": []}
+   result=get_context_from_query(request.query)
+#    docs = retrieve(request.query, vector_store)
+   answer = generate_answer(request.query, result["sources"], config)
+   return {
+       "answer": answer,
+        "sources": [
+            {"chunk": doc["chunks"], "source": doc["metadata"].get("source")}
+            for doc in result["sources"]
+        ]
+   }

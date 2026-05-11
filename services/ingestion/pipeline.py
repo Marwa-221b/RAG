@@ -94,18 +94,22 @@ class DataIngestionPipeline:
 
 # if we try the pipeline 3ala folder 
     def run_on_folder(self, folder_path):
-      
-        documents = []
-        if not os.path.exists(folder_path):
-            return documents
+     documents = []
 
-        for file_name in os.listdir(folder_path):
-            full_path = os.path.join(folder_path, file_name)
+     if not os.path.exists(folder_path):
+        return documents
+
+    # Recursively walk through all folders/subfolders
+     for root, dirs, files in os.walk(folder_path):
+        for file_name in files:
+            full_path = os.path.join(root, file_name)
+
             if os.path.isfile(full_path):
                 result = self.process_file(full_path)
+
                 if result:
                     documents.append(result)
-        
-        return documents
+
+     return documents
 
 
