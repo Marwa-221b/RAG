@@ -7,6 +7,7 @@ system_config = {
     "chunk_size": 200,
     "chunk_overlap": 20,
     "top_k": 5,
+    "max_context_chars" : 32000 ,
     "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
     "temperature": 0.1,
     "max_length": 512,

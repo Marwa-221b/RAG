@@ -2,9 +2,10 @@
 
 from services.retrieval.retriever import retrieve
 from services.retrieval.integration_pip_ret import vector_store_from_pipline
+from app.api.Model.config import system_config
 
-_current_vector_store = None   # module-level cache
 
+_current_vector_store = None 
 def set_vector_store(vec_store):
     global _current_vector_store
     _current_vector_store = vec_store
@@ -14,13 +15,18 @@ def get_context_from_query(query,top_k=5):
     if _current_vector_store is None:
         return {"query": query, "context": "", "sources": []}
     # vec_store=vector_store_from_pipline()
+    max_charss=system_config.get("max_context_chars",8000)
     results=retrieve(query,_current_vector_store,top_k=top_k)
+    if results:
+        print("\n--- Sample Output (First Doc) ---")
+        print(f"Source: {results[0]['metadata']}")
+        print(f"Content (Snippet): {results[0]['chunks'][:200]}...")
     if not results:
         return {"query": query, "context": "", "sources": []}
     results=filter_chunks(results)
     results=Re_Rank(results,query)
-    results=trim_chunks(results)
-
+    results=trim_chunks(results,max_chars=max_charss)
+    
     context=build_context(results)
     return{
         "query":query,
@@ -29,20 +35,8 @@ def get_context_from_query(query,top_k=5):
     }
 
 
-def build_context(retrieved_docs, max_chars=4000):
-    context = []
-    total = 0
-
-    for doc in retrieved_docs:
-        chunk = doc["chunks"]
-
-        if total + len(chunk) > max_chars:
-            break
-
-        context.append(chunk)
-        total += len(chunk)
-
-    return "\n\n".join(context)
+def build_context(retrieved_docs):
+     return "\n\n".join(doc["chunks"] for doc in retrieved_docs)
 
 
 
@@ -57,8 +51,7 @@ def filter_chunks(results,min_words=5):
     return filtered
 
 
-# to improve ranking made in vec_store instead of only semantic similarity given by FAISS
-# WE ADD 1-KEYWORD OVERLAP 2- Heuristic relevance
+
 def Re_Rank(results,query):
     query_words=set(query.lower().split())
     scored=[]
@@ -71,7 +64,7 @@ def Re_Rank(results,query):
 
 
         #     //////////////////////////// edit in enums
-def trim_chunks(results,max_chars=4000):
+def trim_chunks(results,max_chars):
     selected=[]
     total=0
     for doc in results:
@@ -95,3 +88,4 @@ def format_context(results):
         context_parts.append(formatted)
 
     return "\n\n".join(context_parts)
+
