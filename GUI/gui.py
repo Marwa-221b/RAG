@@ -420,7 +420,9 @@ def query_page():
                             st.markdown("### 📚 Sources")
                             for source in result['sources']:
                                 if isinstance(source, dict):
-                                    st.write(f"- {source.get('metadata', {}).get('source', 'Unknown')}")
+                                    source_name = source.get('source') or source.get('metadata', {}).get('source', 'Unknown')
+                                    file_type = source.get('file_type') or source.get('metadata', {}).get('file_type', 'unknown')
+                                    st.write(f"- {source_name} ({file_type.upper()})")
                     else:
                         st.error(f"Query failed: {result}")
             else:

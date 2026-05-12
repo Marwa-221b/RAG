@@ -1,8 +1,9 @@
 
+import os
 
-from services.retrieval.retriever import retrieve
-from services.retrieval.integration_pip_ret import vector_store_from_pipline
 from app.api.Model.config import system_config
+from services.retrieval.integration_pip_ret import vector_store_from_pipline
+from services.retrieval.retriever import retrieve
 
 
 _current_vector_store = None 
@@ -10,13 +11,21 @@ def set_vector_store(vec_store):
     global _current_vector_store
     _current_vector_store = vec_store
 
-def get_context_from_query(query,top_k=5):
+
+def get_vector_store():
     global _current_vector_store
     if _current_vector_store is None:
+        data_directory = system_config.get("data_directory") or os.getenv("DATA_DIRECTORY", "./data/orgin_doc")
+        _current_vector_store = vector_store_from_pipline(folder_path=data_directory)
+    return _current_vector_store
+
+def get_context_from_query(query,top_k=5):
+    current_vector_store = get_vector_store()
+    if current_vector_store is None:
         return {"query": query, "context": "", "sources": []}
     # vec_store=vector_store_from_pipline()
     max_charss=system_config.get("max_context_chars",8000)
-    results=retrieve(query,_current_vector_store,top_k=top_k)
+    results=retrieve(query,current_vector_store,top_k=top_k)
     if results:
         print("\n--- Sample Output (First Doc) ---")
         print(f"Source: {results[0]['metadata']}")
@@ -36,8 +45,23 @@ def get_context_from_query(query,top_k=5):
 
 
 def build_context(retrieved_docs):
-     return "\n\n".join(doc["chunks"] for doc in retrieved_docs)
 
+    context_parts = []
+
+    for doc in retrieved_docs:
+
+        source = doc.get("metadata", {}).get("source", "unknown")
+        chunk = doc.get("chunks", "")
+
+        formatted = f"""
+[SOURCE: {source}]
+
+{chunk}
+"""
+
+        context_parts.append(formatted)
+
+    return "\n\n".join(context_parts)
 
 
 
