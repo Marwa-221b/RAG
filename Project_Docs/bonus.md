@@ -1,1 +1,1 @@
-![alt text](image.png)
+![Description](../assets/image.png)
